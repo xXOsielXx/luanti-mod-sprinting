@@ -1,0 +1,13 @@
+sprinting_drain_hunger (Enable Hunger Drain) bool true
+sprinting_stamina_drain (Stamina Drain per Second) float 0.5
+sprinting_stamina_threshold (Min Stamina to Sprint) int 5
+sprinting_hunger_ng_drain (Hunger NG Drain per Second) float 0.5
+sprinting_hunger_ng_threshold (Min Hunger NG to Sprint) int 4
+sprinting_hbhunger_drain (HBHunger Drain per Second) float 1.0
+sprinting_hbhunger_threshold (Min HBHunger to Sprint) int 6
+
+sprinting_speed_multiplier (Sprint Speed Multiplier) float 1.5
+sprinting_jump_multiplier (Sprint Jump Multiplier) float 1.10
+
+sprinting_require_ground (Require Ground to Sprint) bool true
+sprinting_spawn_particles (Spawn Sprint Particles) bool true
