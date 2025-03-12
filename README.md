@@ -44,7 +44,6 @@ If you want to complement the mod with a hunger(stamina) system, consider instal
 4. **Cancellation**: Stops automatically if:
    - You release the forward key.
    - Stamina/hunger drops below thresholds.
-   - You leave the ground (if enabled).
 
 ---
 
@@ -62,7 +61,7 @@ Configure in `minetest.conf` or via the in-game "Settings" menu:
 | `sprinting_hbhunger_threshold`         | int   | `6`     | Minimum HBHunger required to sprint.         |
 | `sprinting_speed_multiplier`           | float | `1.5`   | Sprint speed multiplier (e.g., 1.5 = 50% faster). |
 | `sprinting_jump_multiplier`            | float | `1.10`  | Sprint jump height multiplier.               |
-| `sprinting_require_ground`             | bool  | `true`  | Require standing on ground to sprint.        |
+| `sprinting_require_ground`             | bool  | `true`  | Require standing on ground to start sprint.        |
 | `sprinting_spawn_particles`            | bool  | `true`  | Enable sprinting particle effects.           |
 
 ---
