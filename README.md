@@ -8,11 +8,12 @@ Enhance your Minetest gameplay with a dynamic sprinting mechanic! Activate sprin
 ---
 
 ## Features
-- Double-tap **W** (or forward key) to sprint.
+- Double-tap **W** (or forward key) or tap the Aux1 key (default **E**) to sprint.
 - Adjustable speed and jump multipliers.
 - Hunger/stamina drain mechanics (supports `stamina`, `hunger_ng`, and `hbhunger`).
 - Ground requirement toggle.
-- Customizable particle effects and FOV transitions.
+- FOV transitions between sprint and walk mode.
+- Customizable particle effects.
 
 ---
 
@@ -44,7 +45,7 @@ If you want to complement the mod with a hunger(stamina) system, consider instal
    - Drains stamina/hunger if enabled and mods are installed.  
 4. **Cancellation**: Stops automatically if:
    - You release the forward key.
-   - You crouch
+   - You sneak
    - Stamina/hunger drops below thresholds.
 
 ---
