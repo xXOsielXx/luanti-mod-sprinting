@@ -4,9 +4,13 @@
 local DOUBLE_TAP_TIME = 0.5  -- Max time (seconds) between forward key presses for double-tap sprint
 local DEFAULT_FOV = 72       -- Base field of view when not sprinting
 local FOV_BOOST = 20         -- FOV increase during sprint
-local FOV_TRANSITION_SPEED = 8 -- Smoothness of FOV changes
+local FOV_TRANSITION_TIME = 0.4 -- Smoothness of FOV changes
 local PARTICLE_SCALE = 0.5   -- Size multiplier for sprint particles
 local PARTICLE_INTERVAL = 0.1 -- Time between particle spawns (seconds)
+
+-- Ensure the value is large enough to be detected by the server
+-- Allow lag spikes of 2.5
+DOUBLE_TAP_TIME = math.max(DOUBLE_TAP_TIME, tonumber(core.settings:get("dedicated_server_step")) * 2.5)
 
 -- Mod settings with default values
 local ENABLE_HUNGER_DRAIN = minetest.settings:get_bool("sprinting_drain_hunger", true)
@@ -63,7 +67,7 @@ minetest.register_on_joinplayer(function(player)
         sprinting = false,          -- Current sprint state
         last_key_time = 0,          -- Timestamp of last forward key press
         original_fov = minetest.settings:get("fov") or DEFAULT_FOV, -- Save original FOV
-        current_fov = DEFAULT_FOV,  -- Tracks transitioning FOV
+        current_fov = 0, -- reset value
         original_speed = physics.speed, -- Base movement speed
         original_jump = physics.jump,   -- Base jump height
         was_pressing_forward = false, -- Previous forward key state
@@ -85,7 +89,7 @@ minetest.register_on_leaveplayer(function(player)
     if data then
         -- Restore original physics and FOV
         player:set_physics_override({speed = data.original_speed, jump = data.original_jump})
-        player:set_fov(data.original_fov, false)
+        player:set_fov(0, false)
         sprint_players[name] = nil
     end
 end)
@@ -210,10 +214,12 @@ minetest.register_globalstep(function(dtime)
         end
 
         -- Smooth FOV transition
-        local target_fov = data.sprinting and (data.original_fov + FOV_BOOST) or data.original_fov
-        data.current_fov = data.current_fov + (target_fov - data.current_fov) * dtime * FOV_TRANSITION_SPEED
-        player:set_fov(data.current_fov, false)
-
+        local target_fov = data.sprinting and (data.original_fov + FOV_BOOST) or 0
+        if target_fov ~= data.current_fov then
+            player:set_fov(target_fov, false, FOV_TRANSITION_TIME)
+            data.current_fov = target_fov
+        end
+        
         -- Spawn trail particles when sprinting
         if SPAWN_PARTICLES and data.sprinting and on_ground then
             data.particle_timer = data.particle_timer + dtime
