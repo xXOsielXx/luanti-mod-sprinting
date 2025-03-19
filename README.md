@@ -67,6 +67,8 @@ Configure in `minetest.conf` or via the in-game "Settings" menu:
 | `sprinting_require_ground`             | bool  | `true`  | Require standing on ground to start sprint.        |
 | `sprinting_spawn_particles`            | bool  | `true`  | Enable sprinting particle effects.           |
 
+*Note: The "**Stamina Drain**" setting in hunger mods does not affect the stamina drain while running in this mod.*
+
 ---
 
 ## License  
