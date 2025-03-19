@@ -1,9 +1,23 @@
+# Enable hunger drain when running. A hunger/stamina mod 
+# must be enabled in order to drain stamina while sprinting
 sprinting_drain_hunger (Enable Hunger Drain) bool true
-sprinting_stamina_drain (Stamina Drain per Second) float 0.5
+
+# Stamina drain per second when sprinting from Stamina mod
+sprinting_stamina_drain (Stamina Drain per Second) float 0.35
+
+# Minimum stamina to sprint, from Stamina mod
 sprinting_stamina_threshold (Min Stamina to Sprint) int 5
-sprinting_hunger_ng_drain (Hunger NG Drain per Second) float 0.5
+
+# Stamina drain per second when sprinting, from Hunger NG mod
+sprinting_hunger_ng_drain (Hunger NG Drain per Second) float 0.35
+
+# Minimum stamina to sprint, from HungerNG mod
 sprinting_hunger_ng_threshold (Min Hunger NG to Sprint) int 4
-sprinting_hbhunger_drain (HBHunger Drain per Second) float 1.0
+
+# Stamina drain per second when sprinting, from HBHunger mod
+sprinting_hbhunger_drain (HBHunger Drain per Second) float 0.85
+
+# Minimum stamina to sprint, from HBHunger mod
 sprinting_hbhunger_threshold (Min HBHunger to Sprint) int 6
 
 sprinting_speed_multiplier (Sprint Speed Multiplier) float 1.5
