@@ -14,11 +14,11 @@ DOUBLE_TAP_TIME = math.max(DOUBLE_TAP_TIME, tonumber(core.settings:get("dedicate
 
 -- Mod settings with default values
 local ENABLE_HUNGER_DRAIN = minetest.settings:get_bool("sprinting_drain_hunger", true)
-local STAMINA_DRAIN = tonumber(minetest.settings:get("sprinting_stamina_drain")) or 0.25
+local STAMINA_DRAIN = tonumber(minetest.settings:get("sprinting_stamina_drain")) or 0.35
 local STAMINA_THRESHOLD = tonumber(minetest.settings:get("sprinting_stamina_threshold")) or 5
-local HUNGER_NG_DRAIN = tonumber(minetest.settings:get("sprinting_hunger_ng_drain")) or 0.25
+local HUNGER_NG_DRAIN = tonumber(minetest.settings:get("sprinting_hunger_ng_drain")) or 0.35
 local HUNGER_NG_THRESHOLD = tonumber(minetest.settings:get("sprinting_hunger_ng_threshold")) or 4
-local HBHUNGER_DRAIN = tonumber(minetest.settings:get("sprinting_hbhunger_drain")) or 0.5
+local HBHUNGER_DRAIN = tonumber(minetest.settings:get("sprinting_hbhunger_drain")) or 0.85
 local HBHUNGER_THRESHOLD = tonumber(minetest.settings:get("sprinting_hbhunger_threshold")) or 6
 local SPEED_MULTIPLIER = tonumber(minetest.settings:get("sprinting_speed_multiplier")) or 1.5
 local JUMP_MULTIPLIER = tonumber(minetest.settings:get("sprinting_jump_multiplier")) or 1.10
@@ -105,32 +105,34 @@ minetest.register_globalstep(function(dtime)
         local pos = player:get_pos()
         local on_ground = minetest.get_node(vector.new(pos.x, pos.y-0.1, pos.z)).name ~= "air"
 
-        -- Get stamina/hunger values (infinite if mod not present)
-        local current_stamina = has_stamina and tonumber(player:get_meta():get("stamina:level")) or math.huge
         local current_hunger = math.huge
         
-        -- Check hunger levels based on available mods
         if ENABLE_HUNGER_DRAIN then
             if has_hunger_ng then
                 local hunger_info = hunger_ng.get_hunger_information(name)
                 current_hunger = hunger_info and hunger_info.hunger.exact or current_hunger
-            elseif has_hbhunger then
+            end
+            if has_hbhunger then
                 current_hunger = hbhunger.get_hunger_raw(player) or current_hunger
+            end
+            if has_stamina then
+                current_stamina = tonumber(player:get_meta():get("stamina:level")) or current_hunger
             end
         end
 
-        -- Handle sprint activation via aux1 (sneak) + forward
+        -- Handle sprint activation via aux1 + forward
         if controls.aux1 and controls.up and not controls.sneak then
             if not data.sprinting then
                 local can_sprint = true
-                -- Check stamina requirements
-                if has_stamina then can_sprint = current_stamina > STAMINA_THRESHOLD end
-                -- Check hunger requirements based on mod
+
+                -- Check if there are enough stamina to start sprint
                 if ENABLE_HUNGER_DRAIN then
                     if has_hunger_ng then can_sprint = can_sprint and current_hunger > HUNGER_NG_THRESHOLD
-                    elseif has_hbhunger then can_sprint = can_sprint and current_hunger > HBHUNGER_THRESHOLD end
+                    elseif has_hbhunger then can_sprint = can_sprint and current_hunger > HBHUNGER_THRESHOLD 
+                    elseif has_stamina then can_sprint = current_stamina > STAMINA_THRESHOLD 
+                    end
                 end
-                -- Check if grounded when required
+
                 if REQUIRE_GROUND then can_sprint = can_sprint and on_ground end
                 
                 -- Activate sprint if all conditions met
@@ -146,11 +148,12 @@ minetest.register_globalstep(function(dtime)
             if controls.up and not data.was_pressing_forward and not controls.sneak then
                 local current_time = minetest.get_us_time() / 1e6
                 if (current_time - data.last_key_time) < DOUBLE_TAP_TIME then
-                    local can_sprint = true
-                    if has_stamina then can_sprint = current_stamina > STAMINA_THRESHOLD end
+                    local can_sprint = true                    
                     if ENABLE_HUNGER_DRAIN then
                         if has_hunger_ng then can_sprint = can_sprint and current_hunger > HUNGER_NG_THRESHOLD
-                        elseif has_hbhunger then can_sprint = can_sprint and current_hunger > HBHUNGER_THRESHOLD end
+                        elseif has_hbhunger then can_sprint = can_sprint and current_hunger > HBHUNGER_THRESHOLD 
+                        elseif has_stamina then can_sprint = current_stamina > STAMINA_THRESHOLD
+                        end
                     end
                     if REQUIRE_GROUND then can_sprint = can_sprint and on_ground end
                     
@@ -167,17 +170,11 @@ minetest.register_globalstep(function(dtime)
 
         -- Apply sprint effects if active
         if data.sprinting then
-            -- Drain stamina
-            if has_stamina and ENABLE_HUNGER_DRAIN then
-                stamina.change(player, -STAMINA_DRAIN * dtime)
-            end
-            
             -- Drain hunger based on mod
             if ENABLE_HUNGER_DRAIN then
-                if has_hunger_ng then
+                if has_hunger_ng and (not has_stamina or (has_stamina and not data.using_aux)) then
                     hunger_ng.alter_hunger(name, -HUNGER_NG_DRAIN * dtime)
-                elseif has_hbhunger then
-                    -- Accumulate fractional drain for hbhunger's integer system
+                elseif has_hbhunger and (not has_stamina or (has_stamina and not data.using_aux)) then
                     data.hbhunger_accumulator = data.hbhunger_accumulator + HBHUNGER_DRAIN * dtime
                     if data.hbhunger_accumulator >= 1 then
                         local new_hunger = math.max(0, hbhunger.get_hunger_raw(player) - math.floor(data.hbhunger_accumulator))
@@ -185,6 +182,8 @@ minetest.register_globalstep(function(dtime)
                         hbhunger.set_hunger_raw(player)
                         data.hbhunger_accumulator = data.hbhunger_accumulator % 1
                     end
+                elseif has_stamina and not data.using_aux then
+                    stamina.change(player, -STAMINA_DRAIN * dtime)
                 end
             end
 
@@ -197,18 +196,16 @@ minetest.register_globalstep(function(dtime)
 
         -- Check for sprint termination conditions
         if data.sprinting and (
-            (data.using_aux and (not controls.aux1 or not controls.up)) or -- Released controls
-            (not data.using_aux and not controls.up) or -- Stopped moving forward
-            (has_stamina and current_stamina <= STAMINA_THRESHOLD) or -- Out of stamina
+            (data.using_aux and (not controls.aux1 or not controls.up)) or
+            (not data.using_aux and not controls.up) or
+            (has_stamina and current_stamina <= STAMINA_THRESHOLD) or
             (ENABLE_HUNGER_DRAIN and ((has_hunger_ng and current_hunger <= HUNGER_NG_THRESHOLD) or
-            (has_hbhunger and current_hunger <= HBHUNGER_THRESHOLD))) or -- Hunger too low
-            controls.sneak -- Stop sprint when crouching
+            (has_hbhunger and current_hunger <= HBHUNGER_THRESHOLD))) or
+            controls.sneak
         ) then
             data.sprinting = false
             data.using_aux = false
-            -- Restore original movement settings
             player:set_physics_override({speed = data.original_speed, jump = data.original_jump})
-            -- Reset animation speed
             player:set_local_animation(ANIMATIONS.idle, ANIMATIONS.walk, ANIMATIONS.dig,
                 ANIMATIONS.walk_while_dig, ANIM_SPEED_IDLE)
         end
