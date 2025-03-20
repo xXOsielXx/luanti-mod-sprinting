@@ -198,9 +198,9 @@ minetest.register_globalstep(function(dtime)
         if data.sprinting and (
             (data.using_aux and (not controls.aux1 or not controls.up)) or
             (not data.using_aux and not controls.up) or
-            (has_stamina and current_stamina <= STAMINA_THRESHOLD) or
-            (ENABLE_HUNGER_DRAIN and ((has_hunger_ng and current_hunger <= HUNGER_NG_THRESHOLD) or
-            (has_hbhunger and current_hunger <= HBHUNGER_THRESHOLD))) or
+            (ENABLE_HUNGER_DRAIN and (has_stamina and (current_stamina <= STAMINA_THRESHOLD))) or
+            (ENABLE_HUNGER_DRAIN and (has_hunger_ng and (current_hunger <= HUNGER_NG_THRESHOLD))) or
+            (ENABLE_HUNGER_DRAIN and (has_hbhunger and (current_hunger <= HBHUNGER_THRESHOLD))) or
             controls.sneak
         ) then
             data.sprinting = false
