@@ -103,7 +103,9 @@ minetest.register_globalstep(function(dtime)
         
         local controls = player:get_player_control()
         local pos = player:get_pos()
-        local on_ground = minetest.get_node(vector.new(pos.x, pos.y-0.1, pos.z)).name ~= "air"
+        local node_below_player = minetest.get_node(vector.new(pos.x, pos.y-0.1, pos.z)).name
+        local on_ground = node_below_player ~= "air"
+        local on_bed = string.match(node_below_player, "bed")
 
         local current_hunger = math.huge
         
@@ -120,11 +122,24 @@ minetest.register_globalstep(function(dtime)
             end
         end
 
-        -- Handle sprint activation via aux1 + forward
-        if controls.aux1 and controls.up and not controls.sneak then
-            if not data.sprinting then
-                local can_sprint = true
+        function checkForDoubleTap()
+            if controls.up and not data.was_pressing_forward and not controls.sneak then
+                local current_time = minetest.get_us_time() / 1e6
+                if (current_time - data.last_key_time) < DOUBLE_TAP_TIME then
+                    return true
+                end
+                data.last_key_time = current_time
+            end
+            return false
+        end
 
+        local can_sprint = true
+
+        -- Handle sprint activation via double-tap or aux1 + forward
+        if (((controls.aux1 and controls.up) or 
+        (checkForDoubleTap())) and
+        (not controls.sneak)) then
+            if not data.sprinting then
                 -- Check if there are enough stamina to start sprint
                 if ENABLE_HUNGER_DRAIN then
                     if has_hunger_ng then can_sprint = can_sprint and current_hunger > HUNGER_NG_THRESHOLD
@@ -132,39 +147,18 @@ minetest.register_globalstep(function(dtime)
                     elseif has_stamina then can_sprint = current_stamina > STAMINA_THRESHOLD 
                     end
                 end
-
+                
                 if REQUIRE_GROUND then can_sprint = can_sprint and on_ground end
+                can_sprint = can_sprint and not player:get_attach() -- Check if there are an entity attached to player (cart, boat...)
+                can_sprint = can_sprint and not on_bed
                 
                 -- Activate sprint if all conditions met
                 if can_sprint then
                     data.sprinting = true
-                    data.using_aux = true
+                    data.using_aux = controls.aux1
                     player:set_local_animation(ANIMATIONS.idle, ANIMATIONS.walk, ANIMATIONS.dig,
                         ANIMATIONS.walk_while_dig, ANIM_SPEED_SPRINT)
                 end
-            end
-        else
-            -- Handle double-tap forward to sprint
-            if controls.up and not data.was_pressing_forward and not controls.sneak then
-                local current_time = minetest.get_us_time() / 1e6
-                if (current_time - data.last_key_time) < DOUBLE_TAP_TIME then
-                    local can_sprint = true                    
-                    if ENABLE_HUNGER_DRAIN then
-                        if has_hunger_ng then can_sprint = can_sprint and current_hunger > HUNGER_NG_THRESHOLD
-                        elseif has_hbhunger then can_sprint = can_sprint and current_hunger > HBHUNGER_THRESHOLD 
-                        elseif has_stamina then can_sprint = current_stamina > STAMINA_THRESHOLD
-                        end
-                    end
-                    if REQUIRE_GROUND then can_sprint = can_sprint and on_ground end
-                    
-                    if can_sprint then
-                        data.sprinting = true
-                        data.using_aux = false
-                        player:set_local_animation(ANIMATIONS.idle, ANIMATIONS.walk, ANIMATIONS.dig,
-                            ANIMATIONS.walk_while_dig, ANIM_SPEED_SPRINT)
-                    end
-                end
-                data.last_key_time = current_time
             end
         end
 
@@ -192,22 +186,6 @@ minetest.register_globalstep(function(dtime)
                 speed = data.original_speed * SPEED_MULTIPLIER,
                 jump = data.original_jump * JUMP_MULTIPLIER
             })
-        end
-
-        -- Check for sprint termination conditions
-        if data.sprinting and (
-            (data.using_aux and (not controls.aux1 or not controls.up)) or
-            (not data.using_aux and not controls.up) or
-            (ENABLE_HUNGER_DRAIN and (has_stamina and (current_stamina <= STAMINA_THRESHOLD))) or
-            (ENABLE_HUNGER_DRAIN and (has_hunger_ng and (current_hunger <= HUNGER_NG_THRESHOLD))) or
-            (ENABLE_HUNGER_DRAIN and (has_hbhunger and (current_hunger <= HBHUNGER_THRESHOLD))) or
-            controls.sneak
-        ) then
-            data.sprinting = false
-            data.using_aux = false
-            player:set_physics_override({speed = data.original_speed, jump = data.original_jump})
-            player:set_local_animation(ANIMATIONS.idle, ANIMATIONS.walk, ANIMATIONS.dig,
-                ANIMATIONS.walk_while_dig, ANIM_SPEED_IDLE)
         end
 
         -- Smooth FOV transition
@@ -245,6 +223,30 @@ minetest.register_globalstep(function(dtime)
                     })
                 end
             end
+        end
+
+        -- Check for sprint termination conditions
+        -- Check if there are enough stamina to continue sprint
+        if ENABLE_HUNGER_DRAIN then
+            if has_hunger_ng then can_sprint = can_sprint and current_hunger > HUNGER_NG_THRESHOLD
+            elseif has_hbhunger then can_sprint = can_sprint and current_hunger > HBHUNGER_THRESHOLD 
+            elseif has_stamina then can_sprint = current_stamina > STAMINA_THRESHOLD 
+            end
+        end
+
+        can_sprint = can_sprint and not player:get_attach() -- Check if there are an entity attached to player (cart, boat...)
+
+        if data.sprinting and (
+            (data.using_aux and (not controls.aux1 or not controls.up)) or
+            (not data.using_aux and not controls.up) or
+            controls.sneak or 
+            not can_sprint
+        ) then
+            data.sprinting = false
+            data.using_aux = false
+            player:set_physics_override({speed = data.original_speed, jump = data.original_jump})
+            player:set_local_animation(ANIMATIONS.idle, ANIMATIONS.walk, ANIMATIONS.dig,
+                ANIMATIONS.walk_while_dig, ANIM_SPEED_IDLE)
         end
 
         -- Update previous control state
