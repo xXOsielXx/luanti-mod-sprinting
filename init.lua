@@ -30,6 +30,13 @@ local has_stamina = minetest.get_modpath("stamina") ~= nil
 local has_hunger_ng = minetest.get_modpath("hunger_ng") ~= nil
 local has_hbhunger = minetest.get_modpath("hbhunger") ~= nil
 
+if has_stamina then
+    if stamina.settings then
+        stamina.settings.exhaust_sprint = 0
+    end
+    stamina.SPRINT_DRAIN = 0
+end
+
 -- Player-specific sprint data storage
 local sprint_players = {}
 
@@ -176,7 +183,7 @@ minetest.register_globalstep(function(dtime)
                         hbhunger.set_hunger_raw(player)
                         data.hbhunger_accumulator = data.hbhunger_accumulator % 1
                     end
-                elseif has_stamina and not data.using_aux then
+                elseif has_stamina then
                     stamina.change(player, -STAMINA_DRAIN * dtime)
                 end
             end
