@@ -24,4 +24,7 @@ sprinting_speed_multiplier (Sprint Speed Multiplier) float 1.5
 sprinting_jump_multiplier (Sprint Jump Multiplier) float 1.10
 
 sprinting_require_ground (Require Ground to Sprint) bool true
+sprinting_sprint_on_ladders (Sprint on ladders) bool true
+# Allows start sprinting on liquids such as water, lava, etc
+sprinting_sprint_on_liquids (Sprint on liquids) bool true
 sprinting_spawn_particles (Spawn Sprint Particles) bool true
