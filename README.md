@@ -38,15 +38,19 @@ If you want to complement the mod with a hunger(stamina) system, consider instal
 2. **Effects**:
    - Speed and jump boosts while sprinting.
    - FOV increases smoothly for a "fast" feel.
-   - Particles spawn underfoot (configurable).  
+   - Particles spawn underfoot (toggleable in settings).  
 3. **Conditions**:
    - Requires ground contact (toggleable in settings).
-   - The player is not crouching
-   - Drains stamina/hunger if enabled and mods are installed.  
+   - The player is not on a ladder (toggleable in settings).
+   - The player is not on a liquid such as water or lava (toggleable in settings).
+   - The player is not crouching.
+   - The player has enough hunger/stamina (configurable).
 4. **Cancellation**: Stops automatically if:
    - You release the forward key.
-   - You sneak
-   - Stamina/hunger drops below thresholds.
+   - You enter a liquid such as water or lava (toggleable in settings).
+   - You go up a ladder (toggleable in settings).
+   - You sneak.
+   - Stamina/hunger drops below thresholds (configurable).
 
 ---
 
@@ -65,6 +69,8 @@ Configure in `minetest.conf` or via the in-game "Settings" menu:
 | `sprinting_speed_multiplier`           | float | `1.5`   | Sprint speed multiplier (e.g., 1.5 = 50% faster). |
 | `sprinting_jump_multiplier`            | float | `1.10`  | Sprint jump height multiplier.               |
 | `sprinting_require_ground`             | bool  | `true`  | Require standing on ground to start sprint.        |
+| `sprinting_sprint_on_ladders`          | bool  | `true`  | Allows start sprinting on ladders            |
+| `sprinting_sprint_on_liquids`          | bool  | `true`  | Allows start sprinting on liquids such as water, lava, etc |
 | `sprinting_spawn_particles`            | bool  | `true`  | Enable sprinting particle effects.           |
 
 *Note: The "**Stamina Drain**" setting in hunger mods does not affect the stamina drain while running in this mod.*
