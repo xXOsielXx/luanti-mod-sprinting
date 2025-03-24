@@ -24,12 +24,15 @@ local SPEED_MULTIPLIER = tonumber(minetest.settings:get("sprinting_speed_multipl
 local JUMP_MULTIPLIER = tonumber(minetest.settings:get("sprinting_jump_multiplier")) or 1.10
 local SPAWN_PARTICLES = minetest.settings:get_bool("sprinting_spawn_particles", true)
 local REQUIRE_GROUND = minetest.settings:get_bool("sprinting_require_ground", true)
+local SPRINT_ON_LADDERS = minetest.settings:get_bool("sprinting_sprint_on_ladders", true)
+local SPRINT_ON_LIQUIDS = minetest.settings:get_bool("sprinting_sprint_on_liquids", true)
 
 -- Detect compatible mods for stamina/hunger systems
 local has_stamina = minetest.get_modpath("stamina") ~= nil
 local has_hunger_ng = minetest.get_modpath("hunger_ng") ~= nil
 local has_hbhunger = minetest.get_modpath("hbhunger") ~= nil
 
+-- Remove stamina drain while sprinting from mod Stamina
 if has_stamina then
     if stamina.settings then
         stamina.settings.exhaust_sprint = 0
@@ -112,6 +115,8 @@ minetest.register_globalstep(function(dtime)
         local pos = player:get_pos()
         local node_below_player = minetest.get_node(vector.new(pos.x, pos.y-0.1, pos.z)).name
         local on_ground = node_below_player ~= "air"
+        local on_ladder = string.match(node_below_player, "ladder")
+        local on_liquid = string.match(node_below_player, "water") or string.match(node_below_player, "lava")
         local on_bed = string.match(node_below_player, "bed")
 
         local current_hunger = math.huge
@@ -156,6 +161,8 @@ minetest.register_globalstep(function(dtime)
                 end
                 
                 if REQUIRE_GROUND then can_sprint = can_sprint and on_ground end
+                if not SPRINT_ON_LADDERS then can_sprint = can_sprint and not on_ladder end
+                if not SPRINT_ON_LIQUIDS then can_sprint = can_sprint and not on_liquid end
                 can_sprint = can_sprint and not player:get_attach() -- Check if there are an entity attached to player (cart, boat...)
                 can_sprint = can_sprint and not on_bed
                 
@@ -241,6 +248,8 @@ minetest.register_globalstep(function(dtime)
             end
         end
 
+        if not SPRINT_ON_LADDERS then can_sprint = can_sprint and not on_ladder end
+        if not SPRINT_ON_LIQUIDS then can_sprint = can_sprint and not on_liquid end
         can_sprint = can_sprint and not player:get_attach() -- Check if there are an entity attached to player (cart, boat...)
 
         if data.sprinting and (
