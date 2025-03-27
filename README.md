@@ -1,6 +1,6 @@
 # Sprinting Mod for Minetest
 
-Enhance your Minetest gameplay with a dynamic sprinting mechanic! Activate sprinting with a double-tap of the forward key, and enjoy speed boosts, particle effects, and FOV changes. Compatible with popular hunger and stamina systems.
+Get anywhere faster by running. The sprint mechanic is something essential in open-world games like Minetest. So, here is the mod that allows just that: Sprinting. Sprint by double-tapping the forward key (usually **W**) or using Aux1 key (default **E**). When you are sprinting, you get faster, your Field of View changes and ground particles begin to appear behind you. Also, you jump a little higher.
 
 ![Screenshot](screenshot.jpg)
 *Example of sprinting particles and FOV effect (HeadAnim mod included).*
@@ -11,7 +11,7 @@ Enhance your Minetest gameplay with a dynamic sprinting mechanic! Activate sprin
 - Double-tap **W** (or forward key) or tap the Aux1 key (default **E**) to sprint.
 - Adjustable speed and jump multipliers.
 - Hunger/stamina drain mechanics (supports `stamina`, `hunger_ng`, and `hbhunger`).
-- Ground requirement toggle.
+- Support for Character Animations mod.
 - FOV transitions between sprint and walk mode.
 - Customizable particle effects.
 
@@ -36,20 +36,16 @@ If you want to complement the mod with a hunger(stamina) system, consider instal
 ## How to Use
 1. **Activation**: Double-tap the **W** key (or your configured forward key) or tap the Aux1 key (default **E**).  
 2. **Effects**:
-   - Speed and jump boosts while sprinting.
-   - FOV increases smoothly for a "fast" feel.
+   - Speed and jump boosts while sprinting (configurable).
+   - FOV increases smoothly for a "fast" feel (configurable).
    - Particles spawn underfoot (toggleable in settings).  
 3. **Conditions**:
    - Requires ground contact (toggleable in settings).
-   - The player is not on a ladder (toggleable in settings).
-   - The player is not on a liquid such as water or lava (toggleable in settings).
-   - The player is not crouching.
-   - The player has enough hunger/stamina (configurable).
+   - The player is not crouching
+   - Drains stamina/hunger if enabled and mods are installed (configurable).  
 4. **Cancellation**: Stops automatically if:
    - You release the forward key.
-   - You enter a liquid such as water or lava (toggleable in settings).
-   - You go up a ladder (toggleable in settings).
-   - You sneak.
+   - You sneak
    - Stamina/hunger drops below thresholds (configurable).
 
 ---
@@ -59,21 +55,23 @@ Configure in `minetest.conf` or via the in-game "Settings" menu:
 
 | Setting Name                           | Type  | Default | Description                                  |
 |----------------------------------------|-------|---------|----------------------------------------------|
-| `sprinting_drain_hunger`               | bool  | `true`  | Enable hunger drain during sprint.           |
-| `sprinting_stamina_drain`              | float | `0.25`   | Stamina drained per second.                  |
-| `sprinting_stamina_threshold`          | int   | `5`     | Minimum stamina required to sprint.          |
-| `sprinting_hunger_ng_drain`            | float | `0.25`   | Hunger NG drained per second.                |
-| `sprinting_hunger_ng_threshold`        | int   | `4`     | Minimum Hunger NG required to sprint.        |
-| `sprinting_hbhunger_drain`             | float | `0.5`   | HBHunger drained per second.                 |
-| `sprinting_hbhunger_threshold`         | int   | `6`     | Minimum HBHunger required to sprint.         |
-| `sprinting_speed_multiplier`           | float | `1.5`   | Sprint speed multiplier (e.g., 1.5 = 50% faster). |
-| `sprinting_jump_multiplier`            | float | `1.10`  | Sprint jump height multiplier.               |
-| `sprinting_require_ground`             | bool  | `true`  | Require standing on ground to start sprint.        |
-| `sprinting_sprint_on_ladders`          | bool  | `true`  | Allows start sprinting on ladders            |
-| `sprinting_sprint_on_liquids`          | bool  | `true`  | Allows start sprinting on liquids such as water, lava, etc |
-| `sprinting_spawn_particles`            | bool  | `true`  | Enable sprinting particle effects.           |
-
-*Note: The "**Stamina Drain**" setting in hunger mods does not affect the stamina drain while running in this mod.*
+| `sprinting_use_aux1`                   | bool  | `true`  | Use Aux1 key (default **E**) for sprinting |
+| `sprinting_speed_multiplier`           | float | `1.5`   | Sprint speed multiplier |
+| `sprinting_jump_multiplier`            | float | `1.10`  | Sprint jump height multiplier               |
+| `sprinting_drain_stamina`              | bool  | `true`  | Enable stamina drain during sprint           |
+| `sprinting_stamina_drain`              | float | `0.25`  | Stamina drain per second, from mod Stamina.                  |
+| `sprinting_stamina_threshold`          | int   | `5`     | Minimum stamina, from mod Stamina, required to sprint          |
+| `sprinting_hunger_ng_drain`            | float | `0.25`  | Stamina drain per second, from mod Hunger NG               |
+| `sprinting_hunger_ng_threshold`        | int   | `4`     | Minimum stamina, from mod Hunger NG, required to sprint.        |
+| `sprinting_hbhunger_drain`             | float | `0.5`   | Stamina drain per second, from mod HBHunger                 |
+| `sprinting_hbhunger_threshold`         | int   | `6`     | Minimum stamina, from mod HBHunger, required to sprint.         |
+| `sprinting_require_ground`             | bool  | `true`  | Prevents starting sprints if the player is in the air        |
+| `sprinting_sprint_on_ladders`          | bool  | `true`  | Allows sprint on ladders                          |
+| `sprinting_sprint_on_liquids`          | bool  | `true`  | Allows sprint on liquids such as water, lava, etc                           |
+| `sprinting_spawn_particles`            | bool  | `true`  | Spawn particles while sprinting          |
+| `sprinting_change_fov`                 | bool  | `true`  | Change the Field Of View when the player start sprinting                  |
+| `sprinting_fov_boost`                  | int   | `20`    | FOV increase during sprint                      |
+| `sprinting_fov_transition_time`        | float | `0.4`   | FOV transition time                |
 
 ---
 
