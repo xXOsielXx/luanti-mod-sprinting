@@ -40,13 +40,17 @@ local has_hbhunger = minetest.get_modpath("hbhunger") ~= nil
 
 -- Detect compatible mods for player animations
 local has_character_anim = minetest.get_modpath("character_anim") ~= nil
+local has_playeranim = minetest.get_modpath("playeranim") ~= nil
 
--- Remove stamina drain while sprinting from mod Stamina
+-- Remove sprint from mod Stamina
 if has_stamina then
     if stamina.settings then
-        stamina.settings.exhaust_sprint = 0
+        stamina.settings.sprint = false
+        stamina.settings.sprint_particles = false
+    else
+        stamina.enable_sprint = false
+        stamina.enable_sprint_particles = false
     end
-    stamina.SPRINT_DRAIN = 0
 end
 
 -- Player-specific sprint data storage
