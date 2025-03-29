@@ -40,7 +40,6 @@ local has_hbhunger = minetest.get_modpath("hbhunger") ~= nil
 
 -- Detect compatible mods for player animations
 local has_character_anim = minetest.get_modpath("character_anim") ~= nil
-local has_playeranim = minetest.get_modpath("playeranim") ~= nil
 
 -- Remove sprint from mod Stamina
 if has_stamina then
