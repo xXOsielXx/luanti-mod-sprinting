@@ -41,10 +41,14 @@ If you want to complement the mod with a hunger(stamina) system, consider instal
    - Particles spawn underfoot (toggleable in settings).  
 3. **Conditions**:
    - Requires ground contact (toggleable in settings).
+   - The player is not on a ladder (toggleable in settings).
+   - The player is not on a liquid such as water or lava (toggleable in settings).
    - The player is not crouching
    - Drains stamina/hunger if enabled and mods are installed (configurable).  
 4. **Cancellation**: Stops automatically if:
    - You release the forward key.
+   - You enter a liquid such as water or lava (toggleable in settings).
+   - You climb a ladder (toggleable in settings).
    - You sneak
    - Stamina/hunger drops below thresholds (configurable).
 
@@ -72,6 +76,8 @@ Configure in `minetest.conf` or via the in-game "Settings" menu:
 | `sprinting_change_fov`                 | bool  | `true`  | Change the Field Of View when the player start sprinting                  |
 | `sprinting_fov_boost`                  | int   | `20`    | FOV increase during sprint                      |
 | `sprinting_fov_transition_time`        | float | `0.4`   | FOV transition time                |
+
+*Note: The "Stamina Drain" setting in hunger mods does not affect the stamina drain while running in this mod.*
 
 ---
 
