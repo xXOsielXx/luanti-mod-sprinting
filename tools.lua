@@ -11,7 +11,7 @@ local function player_is_in_liquid(pos)
             end
         end
     end
-    return false
+    return false 
 end
 
 local function player_is_on_climbable(player)
