@@ -70,14 +70,24 @@ Configure in `minetest.conf` or via the in-game "Settings" menu:
 | `sprinting_hbhunger_drain`             | float | `0.85`   | Stamina drain per second, from mod HBHunger                 |
 | `sprinting_hbhunger_threshold`         | int   | `6`     | Minimum stamina, from mod HBHunger, required to sprint.         |
 | `sprinting_require_ground`             | bool  | `true`  | Prevents starting sprints if the player is in the air        |
-| `sprinting_sprint_on_ladders`          | bool  | `true`  | Allows sprint on ladders                          |
-| `sprinting_sprint_on_liquids`          | bool  | `true`  | Allows sprint on liquids such as water, lava, etc                           |
+| `sprinting_sprint_on_climbable`          | bool  | `true`  | Allows sprint on climbable nodes                         |
+| `sprinting_sprint_in_liquids`          | bool  | `true`  | Allows sprint on liquids such as water, lava, etc                           |
 | `sprinting_spawn_particles`            | bool  | `true`  | Spawn particles while sprinting          |
 | `sprinting_change_fov`                 | bool  | `true`  | Change the Field Of View when the player start sprinting                  |
 | `sprinting_fov_boost`                  | int   | `20`    | FOV increase during sprint                      |
 | `sprinting_fov_transition_time`        | float | `0.4`   | FOV transition time                |
 
 *Note: The "Stamina Drain" setting in hunger mods does not affect the stamina drain while running in this mod.*
+
+---
+
+## Acknowledgement
+
+A small mention of those who contributed to this mod.
+
+- @SmallJoker
+- @degiel1982
+- @DashingPixels
 
 ---
 
