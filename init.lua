@@ -138,7 +138,7 @@ minetest.register_globalstep(function(dtime)
         local node_below_player = minetest.get_node(vector.new(pos.x, pos.y-0.1, pos.z)).name
         local on_ground = node_below_player ~= "air"
         local on_ladder = player_is_on_climbable(player)
-        local on_liquid = player_is_in_liquid(pos)
+        local in_liquid = player_is_in_liquid(pos)
         local on_bed = string.match(node_below_player, "bed")
 
         local current_hunger = math.huge
@@ -184,7 +184,7 @@ minetest.register_globalstep(function(dtime)
                 
                 if REQUIRE_GROUND then can_sprint = can_sprint and on_ground end
                 if not SPRINT_ON_LADDERS then can_sprint = can_sprint and not on_ladder end
-                if not SPRINT_ON_LIQUIDS then can_sprint = can_sprint and not on_liquid end
+                if not SPRINT_IN_LIQUIDS then can_sprint = can_sprint and not in_liquid end
                 can_sprint = can_sprint and not player:get_attach() -- Check if there are an entity attached to player (cart, boat...)
                 can_sprint = can_sprint and not on_bed
                 
@@ -283,7 +283,7 @@ minetest.register_globalstep(function(dtime)
         end
 
         if not SPRINT_ON_LADDERS then can_sprint = can_sprint and not on_ladder end
-        if not SPRINT_ON_LIQUIDS then can_sprint = can_sprint and not on_liquid end
+        if not SPRINT_IN_LIQUIDS then can_sprint = can_sprint and not in_liquid end
         can_sprint = can_sprint and not player:get_attach() -- Check if there are an entity attached to player (cart, boat...)
 
         if data.sprinting and (
