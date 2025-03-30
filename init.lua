@@ -1,4 +1,9 @@
--- Sprinting Mod --
+--[[
+    I load the tools from the file now
+]]
+local player_is_in_liquid, player_is_on_climable = dofile(core.get_modpath("sprinting").."/tools.lua")
+
+
 
 -- Configuration constants for sprinting mechanics
 local DOUBLE_TAP_TIME = 0.5
@@ -132,8 +137,8 @@ minetest.register_globalstep(function(dtime)
         local pos = player:get_pos()
         local node_below_player = minetest.get_node(vector.new(pos.x, pos.y-0.1, pos.z)).name
         local on_ground = node_below_player ~= "air"
-        local on_ladder = string.match(node_below_player, "ladder")
-        local on_liquid = string.match(node_below_player, "water") or string.match(node_below_player, "lava")
+        local on_ladder = player_is_on_climable(player)
+        local on_liquid = player_is_in_liquid(pos)
         local on_bed = string.match(node_below_player, "bed")
 
         local current_hunger = math.huge
