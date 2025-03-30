@@ -14,13 +14,13 @@ local function player_is_in_liquid(pos)
     return false
 end
 
-local function player_is_on_climbable(player)
+local function player_is_on_climable(player)
     local pos = player:get_pos()
     pos.y = pos.y - 0.5 
     local node = minetest.get_node_or_nil(pos)
     if node ~= nil then
         local nodedef = minetest.registered_nodes[node.name]
-        return nodedef and nodedef.climbable or false
+        return nodedef and nodedef.climable or false
     else 
         return false
     end
