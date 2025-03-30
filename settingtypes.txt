@@ -32,11 +32,12 @@ sprinting_hbhunger_drain (HBHunger Drain per Second) float 0.85
 sprinting_hbhunger_threshold (Min HBHunger to Sprint) int 6
 
 [Ground]
-# Prevents starting sprints if the player is in the air
+# Prevents starting sprint if the player is in the air
 sprinting_require_ground (Require Ground to Sprint) bool true
-sprinting_sprint_on_ladders (Sprint on Ladders) bool true
-# Allows start sprint on liquids such as water, lava, etc
-sprinting_sprint_on_liquids (Sprint on Liquids) bool true
+# Allows sprint in climbable nodes such as ladders
+sprinting_sprint_on_climbable (Sprint on Climbable Nodes) bool true
+# Allows sprint in liquids such as water, lava, etc
+sprinting_sprint_in_liquids (Sprint in Liquids) bool true
 
 [Effects]
 sprinting_spawn_particles (Spawn Particles while Sprinting) bool true
