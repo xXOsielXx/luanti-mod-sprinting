@@ -67,10 +67,10 @@ Configure in `minetest.conf` or via the in-game "Settings" menu:
 | `sprinting_stamina_threshold`          | int   | `5`     | Minimum stamina, from mod Stamina, required to sprint          |
 | `sprinting_hunger_ng_drain`            | float | `0.35`  | Stamina drain per second, from mod Hunger NG               |
 | `sprinting_hunger_ng_threshold`        | int   | `4`     | Minimum stamina, from mod Hunger NG, required to sprint.        |
-| `sprinting_hbhunger_drain`             | float | `0.85`   | Stamina drain per second, from mod HBHunger                 |
+| `sprinting_hbhunger_drain`             | float | `0.85`  | Stamina drain per second, from mod HBHunger                 |
 | `sprinting_hbhunger_threshold`         | int   | `6`     | Minimum stamina, from mod HBHunger, required to sprint.         |
 | `sprinting_require_ground`             | bool  | `true`  | Prevents starting sprints if the player is in the air        |
-| `sprinting_sprint_on_climbable`          | bool  | `true`  | Allows sprint on climbable nodes                         |
+| `sprinting_sprint_on_climbable`        | bool  | `true`  | Allows sprint on climbable nodes                         |
 | `sprinting_sprint_in_liquids`          | bool  | `true`  | Allows sprint on liquids such as water, lava, etc                           |
 | `sprinting_spawn_particles`            | bool  | `true`  | Spawn particles while sprinting          |
 | `sprinting_change_fov`                 | bool  | `true`  | Change the Field Of View when the player start sprinting                  |
@@ -87,7 +87,6 @@ A small mention of those who contributed to this mod.
 
 - @SmallJoker
 - @degiel1982
-- @DashingPixels
 
 ---
 
