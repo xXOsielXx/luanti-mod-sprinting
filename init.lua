@@ -3,7 +3,10 @@
 ]]
 local modname = minetest.get_current_modname()
 local modpath = minetest.get_modpath(modname)
-local player_is_in_liquid, player_is_on_climbable = dofile(modpath.."/tools.lua")
+local player_is_in_liquid, 
+player_is_on_climbable, 
+player_is_on_bed, 
+get_particle_texture = dofile(modpath.."/tools.lua")
 
 -- Configuration constants for sprinting mechanics
 local DOUBLE_TAP_TIME = 0.5
@@ -30,7 +33,7 @@ local HBHUNGER_DRAIN = tonumber(minetest.settings:get("sprinting_hbhunger_drain"
 local HBHUNGER_THRESHOLD = tonumber(minetest.settings:get("sprinting_hbhunger_threshold")) or 6
 
 local REQUIRE_GROUND = minetest.settings:get_bool("sprinting_require_ground", true)
-local SPRINT_ON_LADDERS = minetest.settings:get_bool("sprinting_sprint_on_ladders", true)
+local SPRINT_ON_CLIMBABLE = minetest.settings:get_bool("sprinting_sprint_on_climbable", true)
 local SPRINT_IN_LIQUIDS = minetest.settings:get_bool("sprinting_sprint_in_liquids", true)
 
 local SPAWN_PARTICLES = minetest.settings:get_bool("sprinting_spawn_particles", true)
@@ -71,19 +74,6 @@ local ANIMATIONS = {
 -- Animation playback speeds
 local ANIM_SPEED_IDLE = 30               -- Base animation speed
 local ANIM_SPEED_SPRINT = ANIM_SPEED_IDLE * SPEED_MULTIPLIER -- Faster animations when sprinting
-
--- Helper function to get ground texture for particles
-local function get_particle_texture(pos)
-    local ground_pos = vector.new(math.floor(pos.x), math.floor(pos.y - 0.1), math.floor(pos.z))
-    local node = minetest.get_node(ground_pos)
-    local node_def = minetest.registered_nodes[node.name]
-    
-    -- Return the node's bottom texture or first texture if unavailable
-    if node_def and node_def.tiles then
-        local bottom_tile = node_def.tiles[2] or node_def.tiles[1]
-        return type(bottom_tile) == "table" and bottom_tile.name or bottom_tile
-    end
-end
 
 -- Initialize player data on join
 minetest.register_on_joinplayer(function(player)
@@ -137,9 +127,9 @@ minetest.register_globalstep(function(dtime)
         local pos = player:get_pos()
         local node_below_player = minetest.get_node(vector.new(pos.x, pos.y-0.1, pos.z)).name
         local on_ground = node_below_player ~= "air"
-        local on_ladder = player_is_on_climbable(player)
         local in_liquid = player_is_in_liquid(pos)
-        local on_bed = string.match(node_below_player, "bed")
+        local on_climbable = player_is_on_climbable(player)
+        local on_bed = player_is_on_bed(player)
 
         local current_hunger = math.huge
         
@@ -156,7 +146,7 @@ minetest.register_globalstep(function(dtime)
             end
         end
 
-        function checkForDoubleTap()
+        function check_for_double_tap()
             if controls.up and not data.was_pressing_forward and not controls.sneak then
                 local current_time = minetest.get_us_time() / 1e6
                 if (current_time - data.last_key_time) < DOUBLE_TAP_TIME then
@@ -171,7 +161,7 @@ minetest.register_globalstep(function(dtime)
 
         -- Handle sprint activation via double-tap or aux1 + forward
         if (((USE_AUX1 and (controls.aux1 and controls.up)) or 
-        (checkForDoubleTap())) and
+        (check_for_double_tap())) and
         (not controls.sneak)) then
             if not data.sprinting then
                 -- Check if there are enough stamina to start sprint
@@ -183,7 +173,7 @@ minetest.register_globalstep(function(dtime)
                 end
                 
                 if REQUIRE_GROUND then can_sprint = can_sprint and on_ground end
-                if not SPRINT_ON_LADDERS then can_sprint = can_sprint and not on_ladder end
+                if not SPRINT_ON_CLIMBABLE then can_sprint = can_sprint and not on_climbable end
                 if not SPRINT_IN_LIQUIDS then can_sprint = can_sprint and not in_liquid end
                 can_sprint = can_sprint and not player:get_attach() -- Check if there are an entity attached to player (cart, boat...)
                 can_sprint = can_sprint and not on_bed
@@ -244,7 +234,7 @@ minetest.register_globalstep(function(dtime)
         end
 
         -- Spawn trail particles when sprinting
-        if SPAWN_PARTICLES and data.sprinting and on_ground then
+        if SPAWN_PARTICLES and data.sprinting and on_ground and not on_climbable then
             data.particle_timer = data.particle_timer + dtime
             if data.particle_timer >= PARTICLE_INTERVAL then
                 data.particle_timer = 0
@@ -282,9 +272,10 @@ minetest.register_globalstep(function(dtime)
             end
         end
 
-        if not SPRINT_ON_LADDERS then can_sprint = can_sprint and not on_ladder end
+        if not SPRINT_ON_CLIMBABLE then can_sprint = can_sprint and not on_climbable end
         if not SPRINT_IN_LIQUIDS then can_sprint = can_sprint and not in_liquid end
         can_sprint = can_sprint and not player:get_attach() -- Check if there are an entity attached to player (cart, boat...)
+        can_sprint = can_sprint and not on_bed
 
         if data.sprinting and (
             (USE_AUX1 and (data.using_aux and (not controls.aux1 or not controls.up))) or
