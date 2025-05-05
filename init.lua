@@ -3,10 +3,12 @@
 ]]
 local modname = minetest.get_current_modname()
 local modpath = minetest.get_modpath(modname)
-local player_is_in_liquid, 
+local is_player_running_against_wall, 
+player_is_in_liquid, 
 player_is_on_climbable, 
-player_is_on_bed, 
-get_particle_texture = dofile(modpath.."/tools.lua")
+player_is_lying_on_bed, 
+get_particle_texture,
+check_for_double_tap = dofile(modpath.."/tools.lua")
 
 -- Configuration constants for sprinting mechanics
 local DOUBLE_TAP_TIME = 0.5
@@ -125,11 +127,15 @@ minetest.register_globalstep(function(dtime)
         
         local controls = player:get_player_control()
         local pos = player:get_pos()
-        local node_below_player = minetest.get_node(vector.new(pos.x, pos.y-0.1, pos.z)).name
-        local on_ground = node_below_player ~= "air"
+        local dir = player:get_look_dir()
+        local node_below_player = minetest.get_node(vector.new(pos.x, pos.y-0.1, pos.z))
+        
+        local on_ground = node_below_player.name ~= "air"
+        local running_against_wall = is_player_running_against_wall(player)
         local in_liquid = player_is_in_liquid(pos)
         local on_climbable = player_is_on_climbable(player)
-        local on_bed = player_is_on_bed(player)
+        local lying_on_bed = player_is_lying_on_bed(player, node_below_player)
+        local double_tap = check_for_double_tap(controls, data, DOUBLE_TAP_TIME)
 
         local current_hunger = math.huge
         
@@ -146,25 +152,15 @@ minetest.register_globalstep(function(dtime)
             end
         end
 
-        function check_for_double_tap()
-            if controls.up and not data.was_pressing_forward and not controls.sneak then
-                local current_time = minetest.get_us_time() / 1e6
-                if (current_time - data.last_key_time) < DOUBLE_TAP_TIME then
-                    return true
-                end
-                data.last_key_time = current_time
-            end
-            return false
-        end
-
         local can_sprint = true
 
         -- Handle sprint activation via double-tap or aux1 + forward
-        if (((USE_AUX1 and (controls.aux1 and controls.up)) or 
-        (check_for_double_tap())) and
-        (not controls.sneak)) then
+        if ((USE_AUX1 and (controls.aux1 and controls.up) or double_tap) and
+        not data.using_aux and
+        not running_against_wall and
+        not controls.down and
+        not controls.sneak) then
             if not data.sprinting then
-                -- Check if there are enough stamina to start sprint
                 if ENABLE_STAMINA_DRAIN then
                     if has_hunger_ng then can_sprint = can_sprint and current_hunger > HUNGER_NG_THRESHOLD
                     elseif has_hbhunger then can_sprint = can_sprint and current_hunger > HBHUNGER_THRESHOLD 
@@ -176,7 +172,8 @@ minetest.register_globalstep(function(dtime)
                 if not SPRINT_ON_CLIMBABLE then can_sprint = can_sprint and not on_climbable end
                 if not SPRINT_IN_LIQUIDS then can_sprint = can_sprint and not in_liquid end
                 can_sprint = can_sprint and not player:get_attach() -- Check if there are an entity attached to player (cart, boat...)
-                can_sprint = can_sprint and not on_bed
+                can_sprint = can_sprint and not lying_on_bed
+                can_sprint = can_sprint and not eye_node_is_walkable
                 
                 -- Activate sprint if all conditions met
                 if can_sprint then
@@ -222,6 +219,53 @@ minetest.register_globalstep(function(dtime)
                 speed = data.original_speed * SPEED_MULTIPLIER,
                 jump = data.original_jump * JUMP_MULTIPLIER
             })
+
+            -- Spawn trail particles
+            if SPAWN_PARTICLES then
+                local no_particles_node_groups = {"bed", "door", "rail", "attached_node", "wallmounted", "torch", "sapling", "plant", "grass", "flora", "flower", "seed", "mushroom", "fire"}
+
+                local no_particles_node = (function()
+                    for _, group in ipairs(no_particles_node_groups) do
+                        if minetest.get_item_group(node_below_player.name, group) ~= 0 then
+                            return true
+                        end
+                    end
+                    return false
+                end)()
+                
+                if on_ground and 
+                not on_climbable and 
+                not no_particles_node then
+                    data.particle_timer = data.particle_timer + dtime
+                    if data.particle_timer >= PARTICLE_INTERVAL then
+                        data.particle_timer = 0
+                        local texture = get_particle_texture(node_below_player)
+                        
+                        if texture then
+                            minetest.add_particlespawner({
+                                amount = math.random(1, 2),
+                                time = 0.1,
+                                minpos = {x=-0.5, y=0.1, z=-0.5},
+                                maxpos = {x=0.5, y=0.1, z=0.5},
+                                minvel = {x=0, y=5, z=0},
+                                maxvel = {x=0, y=5, z=0},
+                                minacc = {x=0, y=-13, z=0},
+                                maxacc = {x=0, y=-13, z=0},
+                                minexptime = 0.1,
+                                maxexptime = 1,
+                                minsize = PARTICLE_SCALE,
+                                maxsize = PARTICLE_SCALE * 2,
+                                collisiondetection = true,
+                                attached = player,
+                                vertical = false,
+                                playername = name,
+                                glow = 2,
+                                texture = texture
+                            })
+                        end
+                    end
+                end 
+            end
         end
 
         -- Smooth FOV transition
@@ -233,38 +277,7 @@ minetest.register_globalstep(function(dtime)
             end
         end
 
-        -- Spawn trail particles when sprinting
-        if SPAWN_PARTICLES and data.sprinting and on_ground and not on_climbable then
-            data.particle_timer = data.particle_timer + dtime
-            if data.particle_timer >= PARTICLE_INTERVAL then
-                data.particle_timer = 0
-                local texture = get_particle_texture(pos)
-                
-                if texture then
-                    minetest.add_particlespawner({
-                        amount = 4,
-                        time = 0.4,
-                        minpos = vector.subtract(pos, 0.2),
-                        maxpos = vector.add(pos, 0.2),
-                        minvel = {x = -0.8, y = 2.0, z = -0.8},
-                        maxvel = {x = 0.8, y = 3.0, z = 0.8},
-                        minacc = {x = 0, y = -5, z = 0},
-                        minexptime = 0.4,
-                        maxexptime = 0.6,
-                        minsize = PARTICLE_SCALE,
-                        maxsize = PARTICLE_SCALE * 1.2,
-                        collisiondetection = true,
-                        vertical = false,
-                        playername = name,
-                        glow = 2,
-                        texture = texture
-                    })
-                end
-            end
-        end
-
         -- Check for sprint termination conditions
-        -- Check if there are enough stamina to continue sprint
         if ENABLE_STAMINA_DRAIN then
             if has_hunger_ng then can_sprint = can_sprint and current_hunger > HUNGER_NG_THRESHOLD
             elseif has_hbhunger then can_sprint = can_sprint and current_hunger > HBHUNGER_THRESHOLD 
@@ -275,11 +288,14 @@ minetest.register_globalstep(function(dtime)
         if not SPRINT_ON_CLIMBABLE then can_sprint = can_sprint and not on_climbable end
         if not SPRINT_IN_LIQUIDS then can_sprint = can_sprint and not in_liquid end
         can_sprint = can_sprint and not player:get_attach() -- Check if there are an entity attached to player (cart, boat...)
-        can_sprint = can_sprint and not on_bed
+        can_sprint = can_sprint and not lying_on_bed
+        can_sprint = can_sprint and not eye_node_is_walkable
 
         if data.sprinting and (
             (USE_AUX1 and (data.using_aux and (not controls.aux1 or not controls.up))) or
             (not data.using_aux and not controls.up) or
+            running_against_wall or
+            controls.down or
             controls.sneak or 
             not can_sprint
         ) then

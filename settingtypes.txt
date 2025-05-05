@@ -40,6 +40,7 @@ sprinting_sprint_on_climbable (Sprint on Climbable Nodes) bool true
 sprinting_sprint_in_liquids (Sprint in Liquids) bool true
 
 [Effects]
+# Disabling this setting will improve performance.
 sprinting_spawn_particles (Spawn Particles while Sprinting) bool true
 # Change the Field Of View when the player start sprinting
 sprinting_change_fov (Change FOV when Start Sprinting) bool true
