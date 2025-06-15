@@ -71,25 +71,33 @@ end
 
 local function get_particle_texture(node)
     local node_def = minetest.registered_nodes[node.name]
-    
-    -- Return the node's top texture. 
-    -- If the node below player is dirt with grass, return the node's bottom texture.
-    local tile = node_def.tiles
-    if tile then
-        if string.match(node.name, "dirt.*grass") then
-            tile = tile[2]
-        else 
-            tile = tile[1]
-        end
-        
-        -- Get a random tile of the texture
-        local colnum = math.random(0, 2)
-        local rownum = math.random(0, 2)
-        tile = tile .. string.format("^[sheet:3x3:%d,%d", colnum, rownum)
-        
-        return tile
+    if not node_def or not node_def.tiles then
+        return nil
     end
+
+    local tiles = node_def.tiles
+
+    -- Return the node's bottom texture if the node is dirt with grass, 
+    -- because it's more visually appealing this way.
+    local idx = (node.name:match("dirt.*grass") and 2) or 1
+    local tile_entry = tiles[idx]
+
+    if type(tile_entry) == "table" then
+        tile_entry = tile_entry.name or tile_entry[1]
+    end
+
+    if type(tile_entry) ~= "string" then
+        return nil
+    end
+
+    -- Choose a random subtile from a 3x3 texture sheet
+    local colnum = math.random(0, 2)
+    local rownum = math.random(0, 2)
+    local sheet_modifier = string.format("^[sheet:3x3:%d,%d]", colnum, rownum)
+
+    return tile_entry .. sheet_modifier
 end
+
 
 local function check_for_double_tap(controls, data, DOUBLE_TAP_TIME)
     if controls.up and not data.was_pressing_forward and not controls.down and not controls.sneak then
