@@ -35,16 +35,25 @@ sprinting_hbhunger_threshold (Min HBHunger to Sprint) int 6
 # Prevents starting sprint if the player is in the air
 sprinting_require_ground (Require Ground to Sprint) bool true
 # Allows sprint in climbable nodes such as ladders
-sprinting_sprint_on_climbable (Sprint on Climbable Nodes) bool true
-# Allows sprint in liquids such as water, lava, etc
+# 
+# It is not possible to sprint if the player is 
+# directly in front of a wall. To sprint, the 
+# player must be facing in a different direction 
+# than where the ladder is placed.
+sprinting_sprint_on_climbable (Sprint on Climbable Nodes) bool false
+# Allows sprint/swimming in liquids such as water, lava, etc
 sprinting_sprint_in_liquids (Sprint in Liquids) bool true
 
 [Effects]
 # Disabling this setting will improve performance.
 sprinting_spawn_particles (Spawn Particles while Sprinting) bool true
 # Change the Field Of View when the player start sprinting
+# 
+# If you change the FOV during game, you will not 
+# see the changes reflected until you restart the game.
 sprinting_change_fov (Change FOV when Start Sprinting) bool true
 # FOV increase during sprint
 sprinting_fov_boost (FOV Boost) int 20
 # Smoothness of FOV changes
 sprinting_fov_transition_time (FOV Transition Time) float 0.4
+
