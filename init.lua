@@ -103,7 +103,6 @@ end)
 -- Sprint logic
 minetest.register_globalstep(function(dtime)
   for _, player in ipairs(minetest.get_connected_players()) do
-    minetest.chat_send_all(tostring(player:get_meta():get("stamina:level")))
     local name     = player:get_player_name()
     local data     = sprint_players[name]
     if not data then return end
