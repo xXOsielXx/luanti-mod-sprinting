@@ -46,6 +46,7 @@ If you want to complement the mod with a hunger(stamina) system, consider instal
    - The player is not crouching
    - Drains stamina/hunger if enabled and mods are installed (configurable).  
 4. **Cancellation**: Stops automatically if:
+   - You collide with a node
    - You release the forward key.
    - You enter a liquid such as water or lava (toggleable in settings).
    - You climb a ladder (toggleable in settings).
