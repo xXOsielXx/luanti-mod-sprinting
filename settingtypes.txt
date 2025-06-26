@@ -35,11 +35,6 @@ sprinting_hbhunger_threshold (Min HBHunger to Sprint) int 6
 # Prevents starting sprint if the player is in the air
 sprinting_require_ground (Require Ground to Sprint) bool true
 # Allows sprint in climbable nodes such as ladders
-# 
-# It is not possible to sprint if the player is 
-# directly in front of a wall. To sprint, the 
-# player must be facing in a different direction 
-# than where the ladder is placed.
 sprinting_sprint_on_climbable (Sprint on Climbable Nodes) bool false
 # Allows sprint/swimming in liquids such as water, lava, etc
 sprinting_sprint_in_liquids (Sprint in Liquids) bool true
