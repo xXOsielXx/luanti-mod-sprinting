@@ -32,7 +32,7 @@ sprinting_hbhunger_drain (HBHunger Drain per Second) float 0.85
 sprinting_hbhunger_threshold (Min HBHunger to Sprint) int 6
 
 [Ground]
-# Prevents starting sprint if the player is in the air
+# Prevents sprint if the player is in the air
 sprinting_require_ground (Require Ground to Sprint) bool true
 # Allows sprint in climbable nodes such as ladders
 sprinting_sprint_on_climbable (Sprint on Climbable Nodes) bool false
