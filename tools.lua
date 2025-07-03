@@ -1,5 +1,15 @@
 -- Helper functions
 
+local function update_air_time(data, on_ground, dtime, limit)
+    if not on_ground and data.time_in_air < limit then
+        data.time_in_air = (data.time_in_air or 0) + dtime
+    elseif on_ground then
+        data.time_in_air = 0
+        data.can_sprint = data.can_sprint and true
+    end
+    return data.time_in_air
+end
+
 local function player_is_in_liquid(pos)
     local feet_pos = { x = pos.x, y = pos.y - 0.5, z = pos.z }
     local head_pos = { x = pos.x, y = pos.y + 0.85, z = pos.z }
@@ -72,8 +82,9 @@ local function check_for_double_tap(controls, data, DOUBLE_TAP_TIME)
 end
 
 -- Return helper functions
-return player_is_in_liquid,
-       player_is_on_climbable,
-       player_is_lying_on_bed,
-       get_particle_texture,
-       check_for_double_tap
+return update_air_time,
+    player_is_in_liquid,
+    player_is_on_climbable,
+    player_is_lying_on_bed,
+    get_particle_texture,
+    check_for_double_tap
