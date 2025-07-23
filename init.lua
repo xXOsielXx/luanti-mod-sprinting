@@ -168,7 +168,7 @@ minetest.register_globalstep(function(dtime)
         not data.collision and
         not data.using_aux and
         not controls.down and
-        not controls.sneak) then
+        not (controls.sneak and not data.in_liquid)) then
             data.sprinting = true
             data.using_aux = controls.aux1
             if has_character_anim then
@@ -310,7 +310,7 @@ minetest.register_globalstep(function(dtime)
             (not data.using_aux and not controls.up) or
             data.collision or
             controls.down or
-            controls.sneak or 
+            (controls.sneak and not data.in_liquid) or 
             not data.can_sprint
         ) then
             data.sprinting = false
