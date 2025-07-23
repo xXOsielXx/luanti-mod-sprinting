@@ -10,10 +10,21 @@ local function update_air_time(data, on_ground, dtime, limit)
     return data.time_in_air
 end
 
+local function player_is_on_ground(pos)
+  for _, dy in ipairs({-0.1, -0.5, 0.1}) do
+    local n = minetest.get_node({x=pos.x, y=pos.y+dy, z=pos.z})
+    if n.name ~= "air" then
+      return true
+    end
+  end
+  return false
+end
+
 local function player_is_in_liquid(pos)
-    local feet_pos = { x = pos.x, y = pos.y - 0.5, z = pos.z }
-    local head_pos = { x = pos.x, y = pos.y + 0.85, z = pos.z }
-    local check_positions = { vector.round(feet_pos), vector.round(head_pos) }
+    local feet_pos = { x = pos.x, y = pos.y, z = pos.z }           
+    local below_feet_pos = { x = pos.x, y = pos.y - 1, z = pos.z }
+    local check_positions = { feet_pos, below_feet_pos }
+
     for _, p in ipairs(check_positions) do
         local node = core.get_node_or_nil(p)
         if node then
@@ -25,6 +36,7 @@ local function player_is_in_liquid(pos)
     end
     return false
 end
+
 
 local function player_is_on_climbable(player)
     local pos = player:get_pos()
@@ -83,6 +95,7 @@ end
 
 -- Return helper functions
 return update_air_time,
+    player_is_on_ground,
     player_is_in_liquid,
     player_is_on_climbable,
     player_is_lying_on_bed,

@@ -4,6 +4,7 @@
 local modname = minetest.get_current_modname()
 local modpath = minetest.get_modpath(modname)
 local update_air_time,
+player_is_on_ground,
 player_is_in_liquid, 
 player_is_on_climbable, 
 player_is_lying_on_bed, 
@@ -11,7 +12,7 @@ get_particle_texture,
 check_for_double_tap = dofile(modpath.."/tools.lua")
 
 -- Configuration constants for sprinting mechanics
-local TIME_IN_AIR_LIMIT = 0.85
+local TIME_IN_AIR_LIMIT = 0.9
 local DOUBLE_TAP_TIME = 0.5
 local DEFAULT_FOV = 72
 local PARTICLE_SCALE = 0.5
@@ -146,7 +147,7 @@ minetest.register_globalstep(function(dtime)
         data.in_liquid = player_is_in_liquid(pos)
         data.on_climbable = player_is_on_climbable(player)
         data.lying_on_bed = player_is_lying_on_bed(player, data.node_below_player)
-        data.on_ground = data.node_below_player.name ~= "air"
+        data.on_ground = player_is_on_ground(pos)
         data.double_tap = check_for_double_tap(controls, data, DOUBLE_TAP_TIME)
         
         if ENABLE_STAMINA_DRAIN and data.current_stamina then
