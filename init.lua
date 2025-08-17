@@ -30,12 +30,8 @@ local SPEED_MULTIPLIER = tonumber(minetest.settings:get("sprinting_speed_multipl
 local JUMP_MULTIPLIER = tonumber(minetest.settings:get("sprinting_jump_multiplier")) or 1.10
 
 local ENABLE_STAMINA_DRAIN = minetest.settings:get_bool("sprinting_drain_stamina", true)
-local STAMINA_DRAIN = tonumber(minetest.settings:get("sprinting_stamina_drain")) or 0.35
-local STAMINA_THRESHOLD = tonumber(minetest.settings:get("sprinting_stamina_threshold")) or 5
-local HUNGER_NG_DRAIN = tonumber(minetest.settings:get("sprinting_hunger_ng_drain")) or 0.35
-local HUNGER_NG_THRESHOLD = tonumber(minetest.settings:get("sprinting_hunger_ng_threshold")) or 4
-local HBHUNGER_DRAIN = tonumber(minetest.settings:get("sprinting_hbhunger_drain")) or 0.85
-local HBHUNGER_THRESHOLD = tonumber(minetest.settings:get("sprinting_hbhunger_threshold")) or 6
+local STAMINA_DRAIN = tonumber(minetest.settings:get("sprinting_stamina_drain")) or 5
+local STAMINA_THRESHOLD = tonumber(minetest.settings:get("sprinting_stamina_threshold")) or 20
 
 local REQUIRE_GROUND = minetest.settings:get_bool("sprinting_require_ground", true)
 local SPRINT_ON_CLIMBABLE = minetest.settings:get_bool("sprinting_sprint_on_climbable", false)
@@ -64,6 +60,20 @@ if has_stamina then
         stamina.enable_sprint_particles = false
     end
 end
+
+-- Translation factors for hunger/stamina mods
+local CONVERSION_FACTOR = {
+    STAMINA_DRAIN = {
+        stamina = 0.07,
+        hunger_ng = 0.07,
+        hb_hunger = 0.17
+    },
+    STAMINA_THRESHOLD = {
+        stamina = 0.25,
+        hunger_ng = 0.2,
+        hb_hunger = 0.3
+    }
+}
 
 -- Player-specific sprint data storage
 local sprint_players = {}
@@ -190,9 +200,10 @@ minetest.register_globalstep(function(dtime)
             -- Drain hunger based on mod
             if ENABLE_STAMINA_DRAIN then
                 if has_hunger_ng and (not has_stamina or (has_stamina and not data.using_aux)) then
-                    hunger_ng.alter_hunger(name, -HUNGER_NG_DRAIN * dtime)
+                    hunger_ng.alter_hunger(name, -(STAMINA_DRAIN * CONVERSION_FACTOR.STAMINA_DRAIN.hunger_ng) * dtime)
                 elseif has_hbhunger and (not has_stamina or (has_stamina and not data.using_aux)) then
-                    data.hbhunger_accumulator = data.hbhunger_accumulator + HBHUNGER_DRAIN * dtime
+                    local drain_value = (STAMINA_DRAIN * CONVERSION_FACTOR.STAMINA_DRAIN.hb_hunger)
+                    data.hbhunger_accumulator = data.hbhunger_accumulator + drain_value * dtime
                     if data.hbhunger_accumulator >= 1 then
                         local new_hunger = math.max(0, hbhunger.get_hunger_raw(player) - math.floor(data.hbhunger_accumulator))
                         hbhunger.hunger[name] = new_hunger
@@ -200,7 +211,7 @@ minetest.register_globalstep(function(dtime)
                         data.hbhunger_accumulator = data.hbhunger_accumulator % 1
                     end
                 elseif has_stamina then
-                    stamina.change(player, -STAMINA_DRAIN * dtime)
+                    stamina.change(player, -(STAMINA_DRAIN * CONVERSION_FACTOR.STAMINA_DRAIN.stamina) * dtime)
                 end
             end
 
@@ -288,9 +299,15 @@ minetest.register_globalstep(function(dtime)
             data.can_sprint = true
 
             if ENABLE_STAMINA_DRAIN and data.current_stamina then
-                if has_hunger_ng then data.can_sprint = data.current_stamina > HUNGER_NG_THRESHOLD
-                elseif has_hbhunger then data.can_sprint = data.current_stamina > HBHUNGER_THRESHOLD
-                elseif has_stamina then data.can_sprint = data.current_stamina > STAMINA_THRESHOLD 
+                if has_hunger_ng then 
+                    local threshold_value = STAMINA_THRESHOLD * CONVERSION_FACTOR.STAMINA_THRESHOLD.hunger_ng
+                    data.can_sprint = data.current_stamina > threshold_value
+                elseif has_hbhunger then 
+                    local threshold_value = STAMINA_THRESHOLD * CONVERSION_FACTOR.STAMINA_THRESHOLD.hb_hunger
+                    data.can_sprint = data.current_stamina > threshold_value
+                elseif has_stamina then 
+                    local threshold_value = STAMINA_THRESHOLD * CONVERSION_FACTOR.STAMINA_THRESHOLD.stamina
+                    data.can_sprint = data.current_stamina > threshold_value
                 end
             end
 
