@@ -38,7 +38,7 @@ local HBHUNGER_DRAIN = tonumber(minetest.settings:get("sprinting_hbhunger_drain"
 local HBHUNGER_THRESHOLD = tonumber(minetest.settings:get("sprinting_hbhunger_threshold")) or 6
 
 local REQUIRE_GROUND = minetest.settings:get_bool("sprinting_require_ground", true)
-local SPRINT_ON_CLIMBABLE = minetest.settings:get_bool("sprinting_sprint_on_climbable", true)
+local SPRINT_ON_CLIMBABLE = minetest.settings:get_bool("sprinting_sprint_on_climbable", false)
 local SPRINT_IN_LIQUIDS = minetest.settings:get_bool("sprinting_sprint_in_liquids", true)
 
 local SPAWN_PARTICLES = minetest.settings:get_bool("sprinting_spawn_particles", true)
