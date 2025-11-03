@@ -1,47 +1,51 @@
--- Helper functions
+local modpath = minetest.get_modpath(minetest.get_current_modname())
+local helpers = dofile(modpath.."/lib/helpers.lua")
+-- Player-related utilities for the Sprinting mod
+
+local has_beds = minetest.get_modpath("beds") ~= nil
 
 local function update_air_time(data, on_ground, dtime, limit)
-    if not on_ground and data.time_in_air < limit then
+    if not on_ground then
         data.time_in_air = (data.time_in_air or 0) + dtime
-    elseif on_ground then
+    else
         data.time_in_air = 0
-        data.can_sprint = data.can_sprint and true
     end
     return data.time_in_air
 end
 
 local function player_is_on_ground(pos)
-  for _, dy in ipairs({-0.1, -0.5, 0.1}) do
-    local n = minetest.get_node({x=pos.x, y=pos.y+dy, z=pos.z})
-    if n.name ~= "air" then
-      return true
-    end
-  end
-  return false
+    local x,y,z = helpers.round_node_pos(pos, -0.1)
+    local feet_pos = vector.new(x, y, z)
+    local n = helpers.node_at(feet_pos)
+    return helpers.node_is_solid(n)
 end
 
 local function player_is_in_liquid(pos)
-    local feet_pos = { x = pos.x, y = pos.y, z = pos.z }           
-    local below_feet_pos = { x = pos.x, y = pos.y - 1, z = pos.z }
-    local check_positions = { feet_pos, below_feet_pos }
+    local x = math.floor(pos.x + 0.5)
+    local z = math.floor(pos.z + 0.5)
+    local feet_y = math.floor(pos.y - 0.1 + 0.5)
+    local node_y = math.floor(pos.y + 0.5)
+    local mid_y = node_y + 1
+    local below_y = math.floor(pos.y - 1.1 + 0.5)
 
-    for _, p in ipairs(check_positions) do
-        local node = core.get_node_or_nil(p)
-        if node then
-            local nodedef = core.registered_nodes[node.name]
-            if nodedef and nodedef.liquidtype and nodedef.liquidtype ~= "none" then
-                return true
-            end
+    local positions = {
+        vector.new(x, feet_y, z),
+        vector.new(x, mid_y, z),
+        vector.new(x, below_y, z)
+    }
+    for _, p in ipairs(positions) do
+        local n = helpers.node_at(p)
+        if helpers.node_is_liquid(n) then
+            return true
         end
     end
     return false
 end
 
-
 local function player_is_on_climbable(player)
     local pos = player:get_pos()
     pos.y = pos.y - 0.5
-    local node = minetest.get_node_or_nil(pos)
+    local node = helpers.node_at(pos)
     if node then
         local nodedef = minetest.registered_nodes[node.name]
         return nodedef and nodedef.climbable or false
@@ -49,7 +53,6 @@ local function player_is_on_climbable(player)
     return false
 end
 
-local has_beds = minetest.get_modpath("beds") ~= nil
 local function player_is_lying_on_bed(player, node)
     if has_beds then
         if not player or not beds.player then
@@ -93,7 +96,6 @@ local function check_for_double_tap(controls, data, DOUBLE_TAP_TIME)
     return false
 end
 
--- Return helper functions
 return update_air_time,
     player_is_on_ground,
     player_is_in_liquid,
